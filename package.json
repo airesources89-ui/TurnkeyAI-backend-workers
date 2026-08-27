@@ -1,1 +1,18 @@
-
+{
+  "name": "turnkeyai-backend",
+  "version": "2.0.0-workers-stage1",
+  "description": "TurnkeyAI Services Backend — Cloudflare Workers version (Stage 1: foundation)",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "pg": "^8.11.3"
+  },
+  "devDependencies": {
+    "wrangler": "^4.28.0"
+  }
+}
