@@ -13,6 +13,6 @@
     "pg": "^8.11.3"
   },
   "devDependencies": {
-    "wrangler": "4.15.2"
+    "wrangler": "4.127.0"
   }
 }
