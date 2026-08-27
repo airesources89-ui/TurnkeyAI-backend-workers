@@ -1,24 +1,22 @@
 // ════════════════════════════════════════════════
 // ── src/index.js — Stage 1: Foundation
-// ── Note: this does NOT use express.json() — that
-// ── feature pulls in a package with a confirmed,
-// ── unfixed bug in Cloudflare's build tool. We'll add
-// ── a safe replacement for reading JSON request bodies
-// ── in a later stage, once forms need it.
+// ── Switched from Express to Hono: Express has a
+// ── confirmed, unfixed bug in Cloudflare's build tool
+// ── that triggers just from importing it. Hono is the
+// ── framework Cloudflare itself recommends for Workers
+// ── and has no such issue.
 // ════════════════════════════════════════════════
-import { env } from "cloudflare:workers";
-import { httpServerHandler } from "cloudflare:node";
-import express from "express";
+import { Hono } from "hono";
 import { Client } from "pg";
 
-const app = express();
+const app = new Hono();
 
-app.get("/health", (req, res) => {
-  res.json({ status: "ok", stage: "workers-foundation" });
+app.get("/health", (c) => {
+  return c.json({ status: "ok", stage: "workers-foundation" });
 });
 
-app.get("/db-test", async (req, res) => {
-  const client = new Client({ connectionString: env.HYPERDRIVE.connectionString });
+app.get("/db-test", async (c) => {
+  const client = new Client({ connectionString: c.env.HYPERDRIVE.connectionString });
   try {
     await client.connect();
 
@@ -32,17 +30,16 @@ app.get("/db-test", async (req, res) => {
       clientCount = countResult.rows[0].count;
     } catch (_) {}
 
-    res.json({
+    return c.json({
       status: "connected",
       tables: tables.rows.map((r) => r.table_name),
       clientCount,
     });
   } catch (err) {
-    res.status(500).json({ status: "error", message: String(err) });
+    return c.json({ status: "error", message: String(err) }, 500);
   } finally {
     await client.end();
   }
 });
 
-app.listen(3000);
-export default httpServerHandler({ port: 3000 });
+export default app;
