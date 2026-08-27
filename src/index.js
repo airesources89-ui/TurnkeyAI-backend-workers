@@ -1,10 +1,10 @@
 // ════════════════════════════════════════════════
 // ── src/index.js — Stage 1: Foundation
-// ── Goal of this file: prove the app boots on Cloudflare
-// ── Workers, and that it can talk to the Neon database
-// ── through Hyperdrive. Nothing else yet — the real
-// ── routes (intake, admin, chat, etc.) get ported in
-// ── later stages once this foundation is confirmed working.
+// ── Note: this does NOT use express.json() — that
+// ── feature pulls in a package with a confirmed,
+// ── unfixed bug in Cloudflare's build tool. We'll add
+// ── a safe replacement for reading JSON request bodies
+// ── in a later stage, once forms need it.
 // ════════════════════════════════════════════════
 import { env } from "cloudflare:workers";
 import { httpServerHandler } from "cloudflare:node";
@@ -12,14 +12,11 @@ import express from "express";
 import { Client } from "pg";
 
 const app = express();
-app.use(express.json({ limit: "50mb" }));
 
-// ── Health check — same shape as the old Railway /health route ──
 app.get("/health", (req, res) => {
   res.json({ status: "ok", stage: "workers-foundation" });
 });
 
-// ── Database test route — proves Hyperdrive -> Neon works ──
 app.get("/db-test", async (req, res) => {
   const client = new Client({ connectionString: env.HYPERDRIVE.connectionString });
   try {
@@ -33,10 +30,7 @@ app.get("/db-test", async (req, res) => {
     try {
       const countResult = await client.query(`SELECT COUNT(*) AS count FROM clients`);
       clientCount = countResult.rows[0].count;
-    } catch (_) {
-      // "clients" table might not exist under this exact name — that's fine,
-      // the table list above still proves the connection works.
-    }
+    } catch (_) {}
 
     res.json({
       status: "connected",
