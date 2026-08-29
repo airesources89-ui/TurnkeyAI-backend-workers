@@ -616,6 +616,7 @@ function decodeIndustryData(b64str) {
 }
 
 
+var SQ = String.fromCharCode(39);
 var selectedIndustry = null;
 var allInds = [];
 
@@ -625,8 +626,8 @@ var grid = document.getElementById('industryGrid');
 var list = filter ? allInds.filter(function(i){return i.label.toLowerCase().indexOf(filter)>=0||i.key.indexOf(filter)>=0;}) : allInds;
 grid.innerHTML = list.map(function(i){
 var sel = (selectedIndustry===i.key) ? " selected" : "";
-var html = "<div class=\"ind-tile" + sel + "\" onclick=\"selectInd('" + i.key + "')\">";
-html += "<span class=\"icon\">" + i.icon + "</span>" + i.label + "</div>";
+var html = '<div class="ind-tile' + sel + '" onclick="selectInd(' + SQ + i.key + SQ + ')">';
+html += '<span class="icon">' + i.icon + '</span>' + i.label + '</div>';
 return html;
 }).join("");
 }
@@ -785,7 +786,7 @@ var uid='faq_'+Date.now()+'_'+n;
 var builder=document.getElementById('faqBuilder');
 var div=document.createElement('div');
 div.className='faq-pair'; div.id='faq_block_'+uid;
-var removeBtn = (n>1) ? '<button type="button" onclick="removeFaqPair(\"' + uid + '\")" style="background:none;border:none;color:#ef4444;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;padding:0;">&#10005; Remove</button>' : "";
+var removeBtn = (n>1) ? '<button type="button" onclick="removeFaqPair(' + SQ + uid + SQ + ')" style="background:none;border:none;color:#ef4444;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;padding:0;">&#10005; Remove</button>' : "";
 div.innerHTML =
 '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">' +
 '<div class="faq-pair-num" id="faq_label_' + uid + '">Question ' + n + '</div>' +
@@ -35905,24 +35906,7 @@ app.get("/debug/intake-checksum", async (c) => {
   const data = encoder.encode(INTAKE_FORM_HTML);
   const hashBuffer = await crypto.subtle.digest("SHA-256", data);
   const hashHex = Array.from(new Uint8Array(hashBuffer)).map((b) => b.toString(16).padStart(2, "0")).join("");
-  const EXPECTED_CHECKPOINTS = [{"index": 0, "start": 0, "end": 4666, "hash": "c07209369f38"}, {"index": 1, "start": 4666, "end": 9332, "hash": "b06be8c6a3ad"}, {"index": 2, "start": 9332, "end": 13998, "hash": "dc302377d3b6"}, {"index": 3, "start": 13998, "end": 18664, "hash": "77b0db6d78bf"}, {"index": 4, "start": 18664, "end": 23330, "hash": "c30ae6e8195e"}, {"index": 5, "start": 23330, "end": 27996, "hash": "52a02bd8c4ab"}, {"index": 6, "start": 27996, "end": 32662, "hash": "9290daba851e"}, {"index": 7, "start": 32662, "end": 37328, "hash": "a2c223f70c95"}, {"index": 8, "start": 37328, "end": 41994, "hash": "0a4dc046410e"}, {"index": 9, "start": 41994, "end": 46660, "hash": "f5cbf20a5ade"}, {"index": 10, "start": 46660, "end": 51326, "hash": "64396eb45bc9"}, {"index": 11, "start": 51326, "end": 55992, "hash": "9c55514d95a2"}, {"index": 12, "start": 55992, "end": 60658, "hash": "789d38a9e3ce"}, {"index": 13, "start": 60658, "end": 65324, "hash": "5f71ed004a47"}, {"index": 14, "start": 65324, "end": 69990, "hash": "253a8e850146"}, {"index": 15, "start": 69990, "end": 74656, "hash": "e90caf77957e"}, {"index": 16, "start": 74656, "end": 79322, "hash": "e3512b58df84"}, {"index": 17, "start": 79322, "end": 83988, "hash": "6b0d1860e581"}, {"index": 18, "start": 83988, "end": 88654, "hash": "3b1fda081fc8"}, {"index": 19, "start": 88654, "end": 93334, "hash": "3a6fa2c913b9"}];
-  const mismatches = [];
-  for (const cp of EXPECTED_CHECKPOINTS) {
-    const chunk = INTAKE_FORM_HTML.slice(cp.start, cp.end);
-    const chunkHashBuffer = await crypto.subtle.digest("SHA-256", encoder.encode(chunk));
-    const chunkHashHex = Array.from(new Uint8Array(chunkHashBuffer)).map((b) => b.toString(16).padStart(2, "0")).join("").slice(0, 12);
-    if (chunkHashHex !== cp.hash) {
-      mismatches.push({ index: cp.index, charRange: [cp.start, cp.end], gotHash: chunkHashHex, expectedHash: cp.hash, sampleText: chunk.slice(0, 150) });
-    }
-  }
-  return c.json({
-    utf8ByteLength: data.length,
-    expectedUtf8ByteLength: 93572,
-    sha256: hashHex,
-    expectedSha256: "67c0138a22fee127b7686315697f2f0edd80fad13be1658f25c741c032a4d31d",
-    matches: hashHex === "67c0138a22fee127b7686315697f2f0edd80fad13be1658f25c741c032a4d31d",
-    mismatchedRegions: mismatches
-  });
+  return c.json({ utf8ByteLength: data.length, sha256: hashHex });
 });
 app.get("/env-check", (c) => {
   return c.json({ BASE_URL: c.env.BASE_URL || "(not set)" });
