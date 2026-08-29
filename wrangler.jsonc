@@ -9,5 +9,11 @@
       "binding": "HYPERDRIVE",
       "id": "c0d7574628ec4fc59cadeb9a0f731555"
     }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "BOARD_UPLOADS",
+      "bucket_name": "turnkeyai-uploads"
+    }
   ]
 }
